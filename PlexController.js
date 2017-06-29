@@ -18,7 +18,7 @@ util.inherits(PlexController, RequestResponseController);
 PlexController.prototype.load = function(videoId, callback) {
   const requestId = (new Date()).getTime();
   const sessionId = "castv2-plex";
-  const contentId = "/library/metadata/11172";
+  const contentId = `/library/metadata/${id}`;
   const machineIdentifier = "31b6dd0bf85db1d0086a68c3c0e1722b3556766d";
   const address = "192-168-1-12.2f6e0979e5df45f9b2db6f4492ffe0f7.plex.direct";
   const accessToken = "transient-974d1090-45b9-40a0-a5f7-b8f1f5a6e048";

@@ -1,147 +1,113 @@
-var Client = require('castv2-client').Client;
-var Plex = require('./Plex');
-var mdns = require('mdns');
+const Client = require('castv2-client').Client;
+const mdns = require('mdns');
+const PlexAPI = require("plex-api");
+const inquirer = require('inquirer');
 
-// var browser = mdns.createBrowser(mdns.tcp('googlecast'));
+const Plex = require('./Plex');
 
+// const browser = mdns.createBrowser(mdns.tcp('googlecast'));
 // browser.on('serviceUp', function(service) {
 //   console.log('found device "%s" at %s:%d', service.name, service.addresses[
 //     0], service.port);
 //   // ondeviceup(service.addresses[0]);
 //   browser.stop();
 // });
-
 // browser.start();
 
 ondeviceup("192.168.1.23");
 
-function ondeviceup(host) {
+function ondeviceup(chromecastHost) {
 
-  var client = new Client();
-  client.connect(host, function() {
-    console.log('connected, launching app ...');
-    client.launch(Plex, function(err, player) {
-      console.log('launched', err);
-      const contentId = "/library/metadata/11172";
-      const machineIdentifier = "31b6dd0bf85db1d0086a68c3c0e1722b3556766d";
-      const address = "192-168-1-12.2f6e0979e5df45f9b2db6f4492ffe0f7.plex.direct";
-      const accessToken = "transient-974d1090-45b9-40a0-a5f7-b8f1f5a6e048";
-      const containerKey = "/playQueues/124?own=1&window=200";
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'What is your Plex username?'
+    },
+    {
+      type: 'password',
+      message: 'What is your Plex password',
+      name: 'password',
+      mask: '*',
+    }
+  ])
+  .then(({ username, password }) => {
+    console.log('Plex', username, password);
 
-      var data = {
-        "type": "SHOWDETAILS",
-        "media": {
-          contentId,
-          "streamType": "BUFFERED",
-          "contentType": "video",
-          "metadata": null,
-          "duration": null,
-          "tracks": null,
-          "textTrackStyle": null,
-          "customData": {
-            "server": {
-              machineIdentifier,
-              "transcoderVideo": true,
-              "transcoderVideoRemuxOnly": false,
-              "transcoderAudio": true,
-              "version": "0.9.12.4",
-              "myPlexSubscription": false,
-              "isVerifiedHostname": true,
-              "protocol": "https",
-              address,
-              "port": "32400",
-              accessToken,
-            },
-            "user": {
-              "username": "Glavin001"
-            }
-          }
-        }
-      };
-
-      // player.send(data, function() {
-      // });
-      // console.log('sent', arguments);
-      // console.log(player.connection);
-      // console.log(player.connection.channel);
-      // console.log(player.plex);
-      // console.log(player.plex.channel);
-
-      var data2 = {
-        "type": "LOAD",
-        // "requestId": null,
-        // "sessionId": null,
-        "media": {
-          contentId,
-          "streamType": "BUFFERED",
-          "contentType": "video",
-          "metadata": null,
-          "duration": null,
-          "tracks": null,
-          "textTrackStyle": null,
-          "customData": {
-            "offset": 0.0,
-            "directPlay": true,
-            "directStream": true,
-            "subtitleSize": 100,
-            "audioBoost": 100,
-            "server": {
-              machineIdentifier,
-              "transcoderVideo": true,
-              "transcoderVideoRemuxOnly": false,
-              "transcoderAudio": true,
-              "version": "0.9.12.4",
-              "myPlexSubscription": false,
-              "isVerifiedHostname": true,
-              "protocol": "https",
-              address,
-              "port": "32400",
-              accessToken,
-            },
-            "user": {
-              "username": "Glavin001"
-            },
-            containerKey
-          }
-        },
-        "activeTrackIds": null,
-        "autoplay": true,
-        "currentTime": 0.0,
-        "customData": null
-      };
-      // player.send(data2, function() {
-      //   console.log('loaded');
-      // });
-      player.load('', function() {
-        console.log('loaded', arguments);
-      });
-
+    const plexApiClient = new PlexAPI({
+      hostname: 'plex.tv', port: 443,
+      username, password
     });
-  });
+    plexApiClient.query('/api/resources?includeHttps=1')
+      .then(result => {
+        console.log(JSON.stringify(result, null, 2));
+        const devices = result.MediaContainer.Device.map(device => ({
+          name: device.attributes.name,
+          value: device,
+        }));
 
-  client.on('error', function(err) {
-    console.log('Error: %s', err.message);
-    client.close();
+        inquirer.prompt([
+          {
+            type: 'list',
+            name: 'plex',
+            message: 'Which Plex server would you like to use?',
+            choices: devices
+          },
+        ])
+          .then(function (answers) {
+            console.log(JSON.stringify(answers, null, 2));
+            const plexDevice = answers.plex;
+
+            const client = new Client();
+            client.connect(chromecastHost, function () {
+              console.log('connected, launching app ...');
+              client.launch(Plex, function (err, player) {
+                console.log('launched', err);
+                const machineIdentifier = plexDevice.attributes.clientIdentifier;
+                const address = plexDevice.Connection[0].attributes.uri;
+                const accessToken = "transient-974d1090-45b9-40a0-a5f7-b8f1f5a6e048";
+                const containerKey = "/playQueues/124?own=1&window=200";
+
+                player.showDetails('11172', function () {
+                  console.log('showDetails', arguments);
+                });
+
+                player.load('11172', function () {
+                  console.log('loaded', arguments);
+                });
+
+              });
+            });
+
+            client.on('error', function (err) {
+              console.log('Error: %s', err.message);
+              client.close();
+            });
+
+          });
+
+      })
+      .catch(error => console.error(error));
   });
 
 }
 
 /*
-var printArgs = function() {
+const printArgs = function() {
   console.log(arguments);
 };
 // chrome.cast.media.MediaInfo = printArgs;
 // chrome.cast.media.LoadRequest = printArgs;
-var temp = {};
+const temp = {};
 temp.requestSession = chrome.cast.requestSession;
-var session = null;
+const session = null;
 chrome.cast.requestSession = function(onSuccess, onError) {
   temp.requestSession(function(e) {
     session = e;
     console.log('new session');
     temp.loadMedia = session.loadMedia;
     temp.sendMessage = session.sendMessage;
-    var tempFn = function(name, fn) {
+    const tempFn = function(name, fn) {
       return function() {
         console.log(name, arguments);
         console.log(JSON.stringify(arguments));
