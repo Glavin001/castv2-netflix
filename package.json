@@ -11,7 +11,7 @@
     "chromecast",
     "castv2"
   ],
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "git@github.com:xat/castv2-youtube.git"
   },
@@ -19,5 +19,8 @@
   "license": "MIT",
   "dependencies": {
     "castv2-client": "0.0.6"
+  },
+  "devDependencies": {
+    "mdns": "^2.2.11"
   }
 }

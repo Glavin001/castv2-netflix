@@ -1,2 +1,2 @@
-module.exports.YoutubeController = require('./YoutubeController');
-module.exports.Youtube   = require('./Youtube');
+module.exports.PlexController = require('./PlexController');
+module.exports.Plex = require('./Plex');
