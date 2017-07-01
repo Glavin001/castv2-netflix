@@ -65,17 +65,18 @@ function ondeviceup(chromecastHost) {
                   player.selectServer(server);
 
                   const videoId =  "11172"; // "11324"; // "4827";
-                  player.showDetails(videoId)
-                    .then(() => {
-                      console.log('showDetails', arguments);
-                    })
-                    .catch(error => {
-                      console.error(error);
-                    });
-                  
-                  // player.load(videoId, function () {
-                  //   console.log('loaded', arguments);
-                  // });
+
+                  // player.showDetails(videoId)
+                  //   .then(() => {
+                  //     console.log('showDetails', arguments);
+                  //   })
+                  //   .catch(error => {
+                  //     console.error(error);
+                  //   });
+
+                  player.load(videoId, function () {
+                    console.log('loaded', arguments);
+                  });
 
                 });
 
