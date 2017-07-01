@@ -1,8 +1,8 @@
-var util = require('util');
-var castv2Cli = require('castv2-client');
-var Application = castv2Cli.Application;
-var MediaController = castv2Cli.MediaController;
-var PlexController = require('./PlexController');
+const util = require('util');
+const castv2Cli = require('castv2-client');
+const Application = castv2Cli.Application;
+const MediaController = castv2Cli.MediaController;
+const PlexController = require('./PlexController');
 
 function Plex(client, session) {
   Application.apply(this, arguments);
