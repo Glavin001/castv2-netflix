@@ -1,6 +1,5 @@
 const Client = require('castv2-client').Client;
 const mdns = require('mdns');
-const PlexAPI = require("plex-api");
 const inquirer = require('inquirer');
 
 const Plex = require('./Plex');
@@ -22,7 +21,7 @@ function ondeviceup(chromecastHost) {
     {
       type: 'input',
       name: 'username',
-      message: 'What is your Plex username?'
+      message: 'What is your Plex username?',
     },
     {
       type: 'password',
@@ -31,64 +30,68 @@ function ondeviceup(chromecastHost) {
       mask: '*',
     }
   ])
-  .then(({ username, password }) => {
-    console.log('Plex', username, password);
+    .then(({ username, password }) => {
+      console.log('Plex', username, password);
 
-    const plexApiClient = new PlexAPI({
-      hostname: 'plex.tv', port: 443,
-      username, password
-    });
-    plexApiClient.query('/api/resources?includeHttps=1')
-      .then(result => {
-        console.log(JSON.stringify(result, null, 2));
-        const devices = result.MediaContainer.Device.map(device => ({
-          name: device.attributes.name,
-          value: device,
-        }));
+      const client = new Client();
+      client.connect(chromecastHost, function () {
+        console.log('connected, launching app ...');
+        client.launch(Plex, function (err, player) {
+          console.log('launched', err);
 
-        inquirer.prompt([
-          {
-            type: 'list',
-            name: 'plex',
-            message: 'Which Plex server would you like to use?',
-            choices: devices
-          },
-        ])
-          .then(function (answers) {
-            console.log(JSON.stringify(answers, null, 2));
-            const plexDevice = answers.plex;
-
-            const client = new Client();
-            client.connect(chromecastHost, function () {
-              console.log('connected, launching app ...');
-              client.launch(Plex, function (err, player) {
-                console.log('launched', err);
-                const machineIdentifier = plexDevice.attributes.clientIdentifier;
-                const address = plexDevice.Connection[0].attributes.uri;
-                const accessToken = "transient-974d1090-45b9-40a0-a5f7-b8f1f5a6e048";
-                const containerKey = "/playQueues/124?own=1&window=200";
-
-                player.showDetails('11172', function () {
-                  console.log('showDetails', arguments);
-                });
-
-                player.load('11172', function () {
-                  console.log('loaded', arguments);
-                });
-
-              });
-            });
-
-            client.on('error', function (err) {
-              console.log('Error: %s', err.message);
-              client.close();
-            });
-
+          player.login({
+            username, password
           });
 
-      })
-      .catch(error => console.error(error));
-  });
+          player.servers()
+            .then(servers => {
+
+              const serverChoices = servers.map(device => ({
+                name: device.attributes.name,
+                value: device,
+              }));
+
+              return inquirer.prompt([
+                {
+                  type: 'list',
+                  name: 'plex',
+                  message: 'Which Plex server would you like to use?',
+                  choices: serverChoices
+                },
+              ])
+                .then(function (answers) {
+                  // console.log(JSON.stringify(answers, null, 2));
+                  const server = answers.plex;
+                  player.selectServer(server);
+
+                  const videoId =  "11172"; // "11324"; // "4827";
+                  player.showDetails(videoId)
+                    .then(() => {
+                      console.log('showDetails', arguments);
+                    })
+                    .catch(error => {
+                      console.error(error);
+                    });
+                  
+                  // player.load(videoId, function () {
+                  //   console.log('loaded', arguments);
+                  // });
+
+                });
+
+            })
+            .catch(error => console.error(error));
+
+        });
+      });
+
+      client.on('error', function (err) {
+        console.log('Error: %s', err.message);
+        client.close();
+      });
+
+    })
+    .catch(error => console.error(error));
 
 }
 
