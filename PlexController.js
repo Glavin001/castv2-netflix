@@ -88,7 +88,7 @@ PlexController.prototype.plexRequest = function (payload, callback) {
       return payload;
     })
     .then(payload => {
-      console.log("Payload", JSON.stringify(payload, null, 2));
+      // console.log("Payload", JSON.stringify(payload, null, 2));
       return new Promise((resolve, reject) => {
         this.request(payload, (error, result) => {
           if (error) return reject(error);
@@ -164,7 +164,7 @@ PlexController.prototype.password = function () {
 };
 
 PlexController.prototype.selectServer = function (server) {
-  console.log("Server", server);
+  // console.log("Server", server);
 
   const globalPlexConnection = server.Connection.filter(connection => connection.attributes.local === "1")[0];
   const hostname = globalPlexConnection && globalPlexConnection.attributes.uri && url.parse(globalPlexConnection.attributes.uri).hostname;
@@ -181,35 +181,15 @@ PlexController.prototype.selectServer = function (server) {
 PlexController.prototype.servers = function () {
   return this.api.query('/api/resources?includeHttps=1')
     .then(result => {
-      console.log(JSON.stringify(result, null, 2));
+      // console.log(JSON.stringify(result, null, 2));
       const devices = result.MediaContainer.Device;
       const servers = devices.filter(server => server.attributes.provides.indexOf('server') !== -1);
       return servers;
     });
 }
 
-// PlexController.prototype.accessToken = function () {
-//   return this.api.query('/security/token?type=delegation&scope=all')
-//     .then(result => {
-//       console.log('accessToken', result);
-//       return result.MediaContainer.attributes.token;
-//     });
-// };
-
-// PlexController.prototype.createPlayQueue = function () {
-//   const type = "video";
-//   const videoId = "11172";
-//   const uri = `/library/metadata/${videoId}`;
-//   const shuffle = "0";
-//   return this.serverApi.postQuery(`/plexQueue?type=${type}&uri=${uri}&shuffle=${shuffle}`)
-//     // return this.serverApi.query(`/plexQueues`)
-//     .then(result => console.log("playqueue", result))
-//     .then(() => "133")
-//     ;
-// };
-
 PlexController.prototype.setNamespace = function (namespace) {
-  console.log('Namespace', namespace);
+  // console.log('Namespace', namespace);
   this.channel.namespace = namespace;
 }
 

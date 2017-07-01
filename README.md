@@ -1,45 +1,17 @@
-## castv2-youtube
+# castv2-plex
 
-castv2-client youtube sender.
+> [Plex](https://www.plex.tv/) sender for [castv2-client](https://www.npmjs.com/package/castv2-client).
 
-### Sample
+## Installation
 
-```javascript
-var Client                = require('castv2-client').Client;
-var Youtube               = require('castv2-youtube').Youtube;
-var mdns                  = require('mdns');
-
-var browser = mdns.createBrowser(mdns.tcp('googlecast'));
-
-browser.on('serviceUp', function(service) {
-  console.log('found device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-  ondeviceup(service.addresses[0]);
-  browser.stop();
-});
-
-browser.start();
-
-function ondeviceup(host) {
-
-  var client = new Client();
-  client.connect(host, function() {
-    console.log('connected, launching app ...');
-    client.launch(Youtube, function(err, player) {
-      player.load('69V__a49xtw');
-    });
-  });
-
-  client.on('error', function(err) {
-    console.log('Error: %s', err.message);
-    client.close();
-  });
-
-}
+```bash
+npm install castv2-plex
 ```
 
-### Installation
+## Usage
 
-`npm install castv2-youtube`
+See [demo.js](https://github.com/Glavin001/castv2-plex/blob/master/demo.js) for interactive demo.
 
-## License
-MIT
+```bash
+node demo.js
+```

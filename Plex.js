@@ -20,8 +20,7 @@ Plex.APP_ID = '9AC194DC';
 util.inherits(Plex, Application);
 
 Plex.prototype.setNamespace = function (namespace) {
-  console.log('Namespace', namespace);
-  this.plex.channel.namespace = namespace;
+  this.plex.setNamespace(namespace);
 }
 
 Plex.prototype.getStatus = function (callback) {
@@ -34,7 +33,6 @@ Plex.prototype.send = function () {
 };
 
 Plex.prototype.play = function (callback) {
-  // this.setNamespace("urn:x-cast:com.google.cast.media");
   this.setNamespace("urn:x-cast:plex");
   this.media.play.apply(this.media, arguments);
 };
@@ -55,9 +53,8 @@ Plex.prototype.seek = function (currentTime, callback) {
 };
 
 Plex.prototype.load = function (videoId, callback) {
-  console.log('load', this.plex, this.plex.channel);
   this.setNamespace("urn:x-cast:com.google.cast.media");
-  this.plex.load.apply(this.plex, arguments);
+  return this.plex.load.apply(this.plex, arguments);
 };
 
 Plex.prototype.login = function () {

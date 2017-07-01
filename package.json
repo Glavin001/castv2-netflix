@@ -1,21 +1,21 @@
 {
-  "name": "castv2-youtube",
-  "version": "0.0.2",
-  "description": "castv2-client youtube sender",
+  "name": "castv2-plex",
+  "version": "0.1.0",
+  "description": "Plex sernder for castv2-client",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "youtube",
+    "plex",
     "chromecast",
     "castv2"
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:xat/castv2-youtube.git"
+    "url": "git@github.com/Glavin001/castv2-plex.git"
   },
-  "author": "Simon Kusterer",
+  "author": "Glavin Wiechert",
   "license": "MIT",
   "dependencies": {
     "castv2-client": "0.0.6",
